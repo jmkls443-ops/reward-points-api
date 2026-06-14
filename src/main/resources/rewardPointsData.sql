@@ -1,12 +1,3 @@
--- schema.sql (optional, if you want to define table manually)
-CREATE TABLE Transaction (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    customer_id VARCHAR(50),
-    customer_name VARCHAR(100),
-    amount DOUBLE,
-    transaction_date DATE
-);
-
 
 
 -- Sample transactions for testing
