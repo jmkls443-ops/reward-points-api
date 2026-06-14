@@ -18,25 +18,25 @@ public class RewardPointsController {
         this.rewardPointsService = rewardPointsService;
     }
 
-    // ✅ Save a new transaction
+    // Save a new transaction
     @PostMapping
     public RewardPointsTransaction saveTransaction(@RequestBody RewardPointsTransaction transaction) {
         return rewardPointsService.saveTransaction(transaction);
     }
 
-    // ✅ Get all transactions
+    // Get all transactions
     @GetMapping
     public List<RewardPointsTransaction> getAllTransactions() {
         return rewardPointsService.getAllTransactions();
     }
 
-    // ✅ Get transactions by customerId
+    // Get transactions by customerId
     @GetMapping("/customer/{customerId}")
     public List<RewardPointsTransaction> getTransactionsByCustomerId(@PathVariable String customerId) {
         return rewardPointsService.getTransactionsByCustomerId(customerId);
     }
 
-    // ✅ Get transactions by date range
+    // Get transactions by date range
     @GetMapping("/dateRange")
     public List<RewardPointsTransaction> getTransactionsByDateRange(
             @RequestParam LocalDate startDate,
@@ -44,7 +44,7 @@ public class RewardPointsController {
         return rewardPointsService.getTransactionsByDateRange(startDate, endDate);
     }
 
-    // ✅ Get reward summary for a customer
+    // Get reward summary for a customer
     @GetMapping("/summary/{customerId}")
     public CustomerRewardPointsSummaryDTO getCustomerRewardSummary(@PathVariable String customerId) {
         return rewardPointsService.getCustomerRewardSummary(customerId);
