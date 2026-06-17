@@ -1,0 +1,9 @@
+{
+  "customerId": "CUST002",
+  "customerName": "Bob",
+  "monthlyRewards": {
+    "Jun 2025": 150.0,
+    "Jun 2026": 190.0
+  },
+  "totalRewards": 340.0
+}

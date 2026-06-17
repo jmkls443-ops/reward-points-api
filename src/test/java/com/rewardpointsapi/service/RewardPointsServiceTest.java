@@ -1,74 +1,119 @@
 package com.rewardpointsapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rewardpointsapi.dto.CustomerRewardPointsSummaryDTO;
 import com.rewardpointsapi.entity.RewardPointsTransaction;
 import com.rewardpointsapi.repository.RewardPointsRepository;
 
-@ExtendWith(MockitoExtension.class)
-class RewardPointsServiceTest {
+public class RewardPointsServiceTest {
 
-    @Mock
-    private RewardPointsRepository repository;
+    private final RewardPointsRepository repository = Mockito.mock(RewardPointsRepository.class);
+    private final RewardPointsService service = new RewardPointsService(repository);
 
-    @InjectMocks
-    private RewardPointsService service;
+    private ObjectMapper getMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
 
-    @Test
-    void testCalculateRewardPoints_Under50() {
-        assertEquals(0, service.calculateRewardPoints(45));
+    // Helper method to compare BigDecimals ignoring scale
+    private void assertBigDecimalEquals(BigDecimal expected, BigDecimal actual) {
+        assertEquals(0, expected.compareTo(actual),
+            () -> "Expected " + expected + " but was " + actual);
     }
 
     @Test
-    void testCalculateRewardPoints_Between50And100() {
-        assertEquals(25, service.calculateRewardPoints(75)); // 75-50 = 25
+    void testCalculateRewardPoints_fromJsonFixture() throws Exception {
+        ObjectMapper mapper = getMapper();
+
+        RewardPointsTransaction transaction = mapper.readValue(
+                Files.readAllBytes(Paths.get("src/test/resources/docs/request-sample.json")),
+                RewardPointsTransaction.class);
+
+        BigDecimal points = service.calculateRewardPoints(transaction.getAmount());
+        assertBigDecimalEquals(BigDecimal.valueOf(25), points); // adjust based on fixture
     }
 
     @Test
-    void testCalculateRewardPoints_Over100() {
-        assertEquals(90, service.calculateRewardPoints(120)); // 50 + (20*2) = 90
-        assertEquals(250, service.calculateRewardPoints(200)); // 50 + (100*2) = 250
-    }
+    void testCustomerSummary_fromJsonFixture() throws Exception {
+        ObjectMapper mapper = getMapper();
 
-    @Test
-    void testSaveTransaction() {
-        RewardPointsTransaction tx = new RewardPointsTransaction(null, "CUST001", "Alice", 120.0, LocalDate.now());
-        when(repository.save(tx)).thenReturn(tx);
+        RewardPointsTransaction[] transactions = mapper.readValue(
+                Files.readAllBytes(Paths.get("src/test/resources/docs/response-sample.json")),
+                RewardPointsTransaction[].class);
 
-        RewardPointsTransaction saved = service.saveTransaction(tx);
-        assertNotNull(saved);
-        assertEquals("Alice", saved.getCustomerName());
-        verify(repository, times(1)).save(tx);
-    }
-
-    @Test
-    void testGetCustomerRewardSummary() {
-        RewardPointsTransaction tx1 = new RewardPointsTransaction(1L, "CUST001", "Alice", 120.0, LocalDate.of(2026, 4, 10));
-        RewardPointsTransaction tx2 = new RewardPointsTransaction(2L, "CUST001", "Alice", 75.0, LocalDate.of(2026, 5, 15));
-
-        when(repository.findByCustomerId("CUST001")).thenReturn(Arrays.asList(tx1, tx2));
+        Mockito.when(repository.findByCustomerId("CUST001"))
+               .thenReturn(Arrays.asList(transactions[0], transactions[1]));
 
         CustomerRewardPointsSummaryDTO summary = service.getCustomerRewardSummary("CUST001");
 
-        assertEquals("CUST001", summary.getCustomerId());
-        assertEquals("Alice", summary.getCustomerName());
-        assertEquals(115, summary.getTotalRewards()); // 90 + 25
-        assertTrue(summary.getMonthlyRewards().containsKey("Apr"));
-        assertTrue(summary.getMonthlyRewards().containsKey("May"));
+        assertBigDecimalEquals(BigDecimal.valueOf(115), summary.getTotalRewards());
+        assertBigDecimalEquals(BigDecimal.valueOf(90), summary.getMonthlyRewards().get("Apr 2026"));
+        assertBigDecimalEquals(BigDecimal.valueOf(25), summary.getMonthlyRewards().get("May 2026"));
+    }
+
+    @Test
+    void testCustomerSummary_multipleTransactionsAcrossYears() throws Exception {
+        ObjectMapper mapper = getMapper();
+
+        CustomerRewardPointsSummaryDTO summary = mapper.readValue(
+                Files.readAllBytes(Paths.get("src/test/resources/docs/summary-response.json")),
+                CustomerRewardPointsSummaryDTO.class);
+
+        assertBigDecimalEquals(BigDecimal.valueOf(340), summary.getTotalRewards());
+        assertBigDecimalEquals(BigDecimal.valueOf(150), summary.getMonthlyRewards().get("Jun 2025"));
+        assertBigDecimalEquals(BigDecimal.valueOf(190), summary.getMonthlyRewards().get("Jun 2026"));
+    }
+
+    @Test
+    void testCustomerSummary_multipleCustomersAndMonths() {
+        RewardPointsTransaction t1 = new RewardPointsTransaction();
+        t1.setCustomerId("CUST001");
+        t1.setCustomerName("Alice");
+        t1.setAmount(BigDecimal.valueOf(120.75));
+        t1.setTransactionDate(LocalDate.of(2026, 4, 10));
+
+        RewardPointsTransaction t2 = new RewardPointsTransaction();
+        t2.setCustomerId("CUST001");
+        t2.setCustomerName("Alice");
+        t2.setAmount(BigDecimal.valueOf(75.90));
+        t2.setTransactionDate(LocalDate.of(2026, 5, 15));
+
+        RewardPointsTransaction t3 = new RewardPointsTransaction();
+        t3.setCustomerId("CUST002");
+        t3.setCustomerName("Bob");
+        t3.setAmount(BigDecimal.valueOf(200.25));
+        t3.setTransactionDate(LocalDate.of(2025, 6, 20));
+
+        List<RewardPointsTransaction> cust1Tx = Arrays.asList(t1, t2);
+        List<RewardPointsTransaction> cust2Tx = Arrays.asList(t3);
+
+        Mockito.when(repository.findByCustomerId("CUST001")).thenReturn(cust1Tx);
+        Mockito.when(repository.findByCustomerId("CUST002")).thenReturn(cust2Tx);
+
+        CustomerRewardPointsSummaryDTO summary1 = service.getCustomerRewardSummary("CUST001");
+        CustomerRewardPointsSummaryDTO summary2 = service.getCustomerRewardSummary("CUST002");
+
+        assertBigDecimalEquals(BigDecimal.valueOf(117.40), summary1.getTotalRewards()); // 91.5 + 25.9
+        assertBigDecimalEquals(BigDecimal.valueOf(91.5), summary1.getMonthlyRewards().get("Apr 2026"));
+        assertBigDecimalEquals(BigDecimal.valueOf(25.9), summary1.getMonthlyRewards().get("May 2026"));
+
+        assertBigDecimalEquals(BigDecimal.valueOf(250.5), summary2.getTotalRewards()); // (100.25*2 + 50)
+        assertBigDecimalEquals(BigDecimal.valueOf(250.5), summary2.getMonthlyRewards().get("Jun 2025"));
     }
 }

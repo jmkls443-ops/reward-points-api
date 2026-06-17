@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "customerId": "CUST001",
+    "customerName": "Alice",
+    "amount": 120.0,
+    "transactionDate": "2026-04-10",
+    "rewardPoints": 90.0
+  },
+  {
+    "id": 2,
+    "customerId": "CUST001",
+    "customerName": "Alice",
+    "amount": 75.0,
+    "transactionDate": "2026-05-15",
+    "rewardPoints": 25.0
+  },
+  {
+    "id": 3,
+    "customerId": "CUST002",
+    "customerName": "Bob",
+    "amount": 60.0,
+    "transactionDate": "2026-04-20",
+    "rewardPoints": 10.0
+  }
+]

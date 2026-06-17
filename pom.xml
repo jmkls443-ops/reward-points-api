@@ -40,30 +40,25 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- JUnit 5 (Jupiter) -->
+		<!-- Spring Boot Starter Test (includes JUnit 5, Mockito, Hamcrest,
+		etc.) -->
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
-			<version>5.9.3</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions>
+				<!-- Exclude vintage engine to avoid JUnit 4 conflicts -->
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
-		<!-- Mockito for mocking (Java 8 compatible) -->
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>4.11.0</version>
-			<scope>test</scope>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
 		</dependency>
-
-		<!-- Mockito JUnit integration -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>4.11.0</version>
-			<scope>test</scope>
-		</dependency>
-
 
 	</dependencies>
 

@@ -16,6 +16,13 @@ public class GlobalExceptionHandler {
                 .body("Invalid parameter: " + ex.getName() + " → " + ex.getValue());
     }
 
+    // Handle invalid argument usage (e.g. both endDate and months provided)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<String> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body("Bad request: " + ex.getMessage());
+    }
+
     // Handle generic exceptions
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneric(Exception ex) {

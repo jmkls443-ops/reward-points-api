@@ -1,61 +1,31 @@
-package com.rewardpointsapi.entity;
-
-import javax.persistence.Entity;
-import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import javax.persistence.Id;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Column;
+package com.rewardpointsapi.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "Transaction")
-public class RewardPointsTransaction {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
+public class RewardPointsTransactionDTO {
 	private Long id;
-
-	@Column(name = "customer_id", nullable = false)
 	private String customerId;
-
-	@Column(name = "customer_name", nullable = false)
 	private String customerName;
-
-	@Column(name = "amount")
 	private BigDecimal amount;
-
-	@Column(name = "transaction_date")
-	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate transactionDate;
-
-	@Column(name = "rewardPoints")
 	private BigDecimal rewardPoints;
 
-	// Empty constructor
-	public RewardPointsTransaction() {
+	public RewardPointsTransactionDTO() {
+		// Default constructor for Jackson
 	}
 
-	// Parameterized constructor
-
-	public RewardPointsTransaction(Long id, String customerId, String customerName, BigDecimal amount,
-			LocalDate transactionDate) {
+	public RewardPointsTransactionDTO(Long id, String customerId, String customerName, BigDecimal amount,
+			LocalDate transactionDate, BigDecimal rewardPoints) {
 		this.id = id;
 		this.customerId = customerId;
 		this.customerName = customerName;
 		this.amount = amount;
 		this.transactionDate = transactionDate;
+		this.rewardPoints = rewardPoints;
 	}
 
-	// Getters and Setters
+	// Getters and setters
 	public Long getId() {
 		return id;
 	}
@@ -102,14 +72,5 @@ public class RewardPointsTransaction {
 
 	public void setRewardPoints(BigDecimal rewardPoints) {
 		this.rewardPoints = rewardPoints;
-	}
-
-	@PrePersist
-	@PreUpdate
-
-	public void ensureRewardPointsNotNull() {
-		if (rewardPoints == null) {
-			rewardPoints = BigDecimal.ZERO; // default value
-		}
 	}
 }
