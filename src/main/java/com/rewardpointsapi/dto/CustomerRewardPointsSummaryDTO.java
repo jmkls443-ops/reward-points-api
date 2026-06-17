@@ -15,7 +15,7 @@ public class CustomerRewardPointsSummaryDTO {
     }
 
     // Parameterized constructor
-    public CustomerRewardPointsSummaryDTO(String customerId, String customerName, 
+    public CustomerRewardPointsSummaryDTO(String customerId, String customerName,
                                           Map<String, BigDecimal> monthlyRewards, BigDecimal totalRewards) {
         this.customerId = customerId;
         this.customerName = customerName;

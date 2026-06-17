@@ -1,6 +1,13 @@
 package com.rewardpointsapi.service;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.rewardpointsapi.dto.CustomerRewardPointsSummaryDTO;
+import com.rewardpointsapi.entity.RewardPointsTransaction;
+import com.rewardpointsapi.repository.RewardPointsRepository;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.nio.file.Files;
@@ -9,15 +16,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.rewardpointsapi.dto.CustomerRewardPointsSummaryDTO;
-import com.rewardpointsapi.entity.RewardPointsTransaction;
-import com.rewardpointsapi.repository.RewardPointsRepository;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RewardPointsServiceTest {
 
@@ -34,7 +33,7 @@ public class RewardPointsServiceTest {
     // Helper method to compare BigDecimals ignoring scale
     private void assertBigDecimalEquals(BigDecimal expected, BigDecimal actual) {
         assertEquals(0, expected.compareTo(actual),
-            () -> "Expected " + expected + " but was " + actual);
+                () -> "Expected " + expected + " but was " + actual);
     }
 
     @Test
@@ -58,7 +57,7 @@ public class RewardPointsServiceTest {
                 RewardPointsTransaction[].class);
 
         Mockito.when(repository.findByCustomerId("CUST001"))
-               .thenReturn(Arrays.asList(transactions[0], transactions[1]));
+                .thenReturn(Arrays.asList(transactions[0], transactions[1]));
 
         CustomerRewardPointsSummaryDTO summary = service.getCustomerRewardSummary("CUST001");
 
